@@ -1,6 +1,6 @@
 import pytest
 import pandas as pd
-from onetoken.classifier import classify
+from onetokenpy.classifier import classify
 
 def test_classify_with_dataframe(sample_dataframe, prompt_template):
     # Run classification

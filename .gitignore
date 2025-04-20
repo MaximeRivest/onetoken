@@ -150,4 +150,4 @@ Thumbs.db
 .cache/huggingface/
 
 # Specific to this project
-playground/ # Already present, kept for clarity
+playground/

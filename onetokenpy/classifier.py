@@ -69,7 +69,7 @@ class GPUEngine:
             global LLM, SamplingParams # Make classes available globally
             from vllm import LLM, SamplingParams
         except ImportError:
-             raise ImportError("vLLM is not installed. Please install it for GPU support: pip install 'onetoken[gpu]'")
+             raise ImportError("vLLM is not installed. Please install it for GPU support: pip install 'onetokenpy[gpu]'")
 
         try:
             print(f"Loading vLLM model: {model_path}")
