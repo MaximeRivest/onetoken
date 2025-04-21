@@ -1,31 +1,43 @@
 #!/bin/bash
 set -e
 
-# Clean build directories
-rm -rf build/ dist/ *.egg-info/
+# Colors for output
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+RED='\033[0;31m'
+NC='\033[0m' # No Color
 
-# Install build dependencies
-pip install --upgrade pip setuptools wheel build twine
+echo -e "${YELLOW}Cleaning up previous builds...${NC}"
+rm -rf dist/ build/ src/*.egg-info
 
-# Build the package using PEP517
-echo "Building package..."
+echo -e "${YELLOW}Installing build dependencies...${NC}"
+pip install --upgrade pip build twine
+
+echo -e "${YELLOW}Building package...${NC}"
 python -m build
 
-# Manually check the built distributions
-echo "Checking distributions..."
-twine check dist/*
+echo -e "${GREEN}Build completed successfully!${NC}"
+echo -e "Distribution files:"
+ls -lh dist/
 
-# Prompt for upload
-echo ""
-read -p "Do you want to upload to PyPI? (y/n): " upload_choice
+echo -e "\n${YELLOW}Do you want to publish to PyPI? (y/n)${NC}"
+read publish_choice
 
-if [[ $upload_choice == "y" ]]; then
-  echo "Uploading to PyPI..."
-  twine upload dist/*
-  echo "Package published to PyPI successfully!"
+if [ "$publish_choice" = "y" ]; then
+    echo -e "${YELLOW}Do you want to upload to Test PyPI first? (y/n)${NC}"
+    read test_pypi_choice
+    
+    if [ "$test_pypi_choice" = "y" ]; then
+        echo -e "${YELLOW}Uploading to Test PyPI...${NC}"
+        python -m twine upload --repository-url https://test.pypi.org/legacy/ dist/*
+        echo -e "${GREEN}Uploaded to Test PyPI successfully!${NC}"
+        echo -e "You can install the test version with:"
+        echo -e "pip install --index-url https://test.pypi.org/simple/ onetokenpy"
+    fi
+
+    echo -e "${YELLOW}Uploading to PyPI...${NC}"
+    python -m twine upload dist/*
+    echo -e "${GREEN}Upload completed successfully!${NC}"
 else
-  echo "Upload skipped."
-fi
-
-echo "Generated files:"
-ls -la dist/ 
+    echo -e "${YELLOW}Skipping PyPI upload.${NC}"
+fi 

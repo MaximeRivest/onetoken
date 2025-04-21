@@ -224,69 +224,52 @@ def classify(
     system_prompt: Optional[str] = None, # Added system_prompt
     max_tokens: Optional[int] = None     # Added max_tokens
 ) -> pd.DataFrame:
-    """
-    Classify input data using a local LLM (vLLM for GPU, llama.cpp for CPU).
+    """Classify the input data using the LLM.
 
     Args:
         data: Input data as pandas DataFrame or list of strings.
               If DataFrame, column names are used for prompt_template formatting.
               If list of strings, prompt_template must use '{text}'.
         prompt_template: Template string for user prompts (e.g., "Classify: {text}").
-        model_path: Path to the model file (for llama.cpp if local) OR
-                    Hugging Face repo ID (e.g., "google/gemma-2b" for vLLM,
-                    or "google/gemma-2b-gguf" for llama.cpp).
-                    For llama.cpp, the first .gguf file in the repo will be downloaded if not local.
+        model_path: Path to the model file or Hugging Face model ID.
+                    Default is "google/gemma-3-1b-it-qat-q4_0-gguf".
         device: Device to use ('cuda' or 'cpu'). If None, detects automatically.
         system_prompt: Optional system prompt to guide the model's behavior.
-                       Uses the underlying model's chat completion method.
-        max_tokens: Optional maximum number of tokens to generate for the classification.
-                    Overrides the default ({DEFAULT_MAX_TOKENS}).
+        max_tokens: Maximum tokens to generate for each classification.
 
     Returns:
-        DataFrame with original data, classifications, and prompts.
-
-    Raises:
-        ValueError: If input data, prompt template, model path, or device are invalid.
-        ImportError: If required backend libraries (vLLM, llama-cpp-python) are not installed.
-        RuntimeError: If engine initialization or inference fails.
+        DataFrame with original data and classification results
     """
-    # Determine device
+    # Detect device if not specified
     if device is None:
-        backend = "cuda" if torch.cuda.is_available() else "cpu"
-        print(f"Auto-detected backend: {backend}")
-    else:
-        backend = device.lower()
-        if backend not in ("cuda", "cpu"):
-            raise ValueError(f"Unsupported device '{device}'. Choose 'cuda' or 'cpu'.")
-        print(f"Using specified backend: {backend}")
+        device = "cuda" if torch.cuda.is_available() else "cpu"
+        print(f"Auto-detected device: {device}")
+    elif device not in ['cuda', 'cpu']:
+        raise ValueError(f"Invalid device specified: '{device}'. Must be 'cuda' or 'cpu'.")
 
-    # Process user prompts first to catch formatting errors early
+    # Process prompts from data
     try:
-        user_prompts = _process_prompts(data, prompt_template)
-    except (TypeError, ValueError, RuntimeError) as e:
-         raise ValueError(f"Failed to process user prompts: {e}")
+        processed_prompts = _process_prompts(data, prompt_template)
+        print(f"Processed {len(processed_prompts)} prompts")
+    except Exception as e:
+        raise ValueError(f"Failed to process prompts: {e}")
 
-    # Get cached engine instance
+    # Get engine (cached) and run classification
     try:
-        engine = _get_cached_engine(model_path, backend)
-    except RuntimeError as e:
-         raise RuntimeError(f"Failed to get or initialize engine: {e}")
+        engine = _get_cached_engine(model_path, device)
+        classifications = engine.classify(processed_prompts, system_prompt, max_tokens)
+    except Exception as e:
+        raise RuntimeError(f"Classification failed: {e}")
 
-    if not engine:
-        raise RuntimeError("Failed to create or retrieve an inference engine.")
-
-    # Get classifications using the engine's chat-based classify method
-    print(f"Starting classification of {len(user_prompts)} items using {backend.upper()} engine's chat method (model: '{model_path}')...")
-    classifications = engine.classify(user_prompts, system_prompt=system_prompt, max_tokens=max_tokens)
-    print("Classification complete.")
-
-    # Create result DataFrame
+    # Return results in a DataFrame
     if isinstance(data, pd.DataFrame):
-        result = data.copy()
-    else: # isinstance(data, list)
-        result = pd.DataFrame({"text": data})
-
-    result["classification"] = classifications
-    result["prompt"] = user_prompts # Store original user prompts
-
-    return result 
+        result_df = data.copy()
+        result_df['classification'] = classifications
+        result_df['prompt'] = processed_prompts
+        return result_df
+    else:
+        return pd.DataFrame({
+            'text': data,
+            'classification': classifications,
+            'prompt': processed_prompts
+        }) 
