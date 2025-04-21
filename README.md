@@ -1,6 +1,6 @@
 # onetokenpy
 
-[![PyPI version](https://badge.fury.io/py/onetokenpy.svg)](https://badge.fury.io/py/onetokenpy) [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![PyPI version](https://badge.fury.io/py/onetokenpy.svg)](https://badge.fury.io/py/onetokenpy) [![License: Apache-2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 
 **A flexible, open-source Python library for fast and easy data classification and clustering using Large Language Models (LLMs), optimized for performance.**
 
@@ -182,7 +182,7 @@ We welcome contributions from the community\! Whether it's reporting bugs, sugge
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE](https://www.google.com/search?q=LICENSE) file for details.
+This project is licensed under the Apache 2.0 License - see the [LICENSE](https://www.google.com/search?q=LICENSE) file for details.
 
 ## Author
 
