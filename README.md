@@ -123,22 +123,6 @@ ot.classify.locally.huggingface.model()
 ot.classify.locally.llama_cpp.model()
 ```
 
-### Full API (Partially Implemented)
-
-```python
-ot.classify(
-    data,                           # DataFrame or list
-    template_prompt,                # String with {column_name} placeholders
-    system_prompt=None,             # Optional system prompt
-    model_provider='onetoken',      # Default provider
-    model='gemma_4b',               # Default model
-    response_col_name='generated_text',
-    add_model_id_col=False,         # Add column with model identifier
-    add_prompt_col=False,           # Add column with generated prompts
-    return_only_results_as_list=False,
-    filter_on=None                  # Convenience filter (e.g. 'Yes')
-)
-```
 
   * **`onetoken` (Remote):**
       * **Pros:** Easiest setup, no local dependencies needed, managed infrastructure.
